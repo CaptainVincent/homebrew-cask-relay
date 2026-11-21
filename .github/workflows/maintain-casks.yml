@@ -1,0 +1,87 @@
+name: Maintain selected casks
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: selected-cask-updates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      github.ref_name == github.event.repository.default_branch &&
+      (github.event_name == 'workflow_dispatch' || vars.CASK_RELAY_ENABLED == 'true')
+    runs-on: macos-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_ANALYTICS: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6; immutable official action
+        with:
+          persist-credentials: false
+
+      - name: Validate and prepare updates (no app installs)
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update --quiet
+          repo="${GITHUB_REPOSITORY#*/}"
+          [[ "$repo" == homebrew-* ]] || { echo "Repository must be named homebrew-<tap>"; exit 1; }
+          tap="$(printf '%s/%s' "$GITHUB_REPOSITORY_OWNER" "${repo#homebrew-}" | tr '[:upper:]' '[:lower:]')"
+          tap_path="$(brew --repository)/Library/Taps/${tap%/*}/homebrew-${tap#*/}"
+          [[ ! -e "$tap_path" && ! -L "$tap_path" ]] || { echo "Tap path already occupied"; exit 1; }
+          mkdir -p "$(dirname "$tap_path")"
+          ln -s "$GITHUB_WORKSPACE" "$tap_path"
+          python3 -m unittest discover -s tests -v
+          python3 -m cask_relay sync
+          decision="$(python3 -m cask_relay policy)"
+          printf '%s\n' "$decision"
+          printf '%s' "$decision" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin)["publishable"] is True else 1)'
+          routine="$(printf '%s' "$decision" | python3 -c 'import json,sys; print(str(json.load(sys.stdin)["automatic"]).lower())')"
+          if [[ "$routine" == true ]]; then
+            python3 -m cask_relay list | while IFS= read -r cask; do
+              brew trust --cask "$tap/$cask"
+            done
+            python3 -m cask_relay sync --tap "$tap" --bump
+          else
+            echo "New/changed recipe code awaits review; not evaluating it with Homebrew"
+          fi
+
+      - name: Open a pull request for review
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git diff --cached --quiet || { echo "Unexpected staged changes"; exit 1; }
+          decision="$(python3 -m cask_relay policy)"
+          printf '%s\n' "$decision"
+          printf '%s' "$decision" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin)["publishable"] is True else 1)'
+          git diff --quiet && exit 0
+          open="$(gh pr list --state open --json headRefName --jq 'map(select(.headRefName | startswith("automation/casks-"))) | length')"
+          [[ "$open" == 0 ]] || { echo "An update PR already awaits review; leaving it untouched"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u -- Casks source-lock.json
+          git diff --cached --quiet && exit 0
+          python3 -m unittest discover -s tests
+          branch="automation/casks-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m "Update selected casks from official sources"
+          gh auth setup-git
+          git push --set-upstream origin "$branch"
+          gh pr create --base "$DEFAULT_BRANCH" --head "$branch" \
+            --title "Update selected casks" \
+            --body "Review the recipe and source-lock changes before merging. No applications were installed and no OS security settings were changed."

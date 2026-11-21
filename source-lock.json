@@ -1,0 +1,42 @@
+{
+  "chromedriver": {
+    "artifact_host": "storage.googleapis.com",
+    "official_recipe_sha256": "8fc58eef892bab49c3edd8c509ce9e3c3b93e7c858f5fff9858becc65a9999fb",
+    "official_version": "152.0.7977.64",
+    "recipe_sha256": "8fc58eef892bab49c3edd8c509ce9e3c3b93e7c858f5fff9858becc65a9999fb",
+    "source_sha256": "cadee06c0c8ed95ace87137338366131a6988aff637e15da077b62bd127f8aee",
+    "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/c/chromedriver.rb"
+  },
+  "dupeguru": {
+    "artifact_host": "github.com",
+    "official_recipe_sha256": "d8f0dc9c61fe6f2e8047d69676c5eb03c6587abd0b3a1bec6cd03e80832feb7f",
+    "official_version": "4.3.1",
+    "recipe_sha256": "d8f0dc9c61fe6f2e8047d69676c5eb03c6587abd0b3a1bec6cd03e80832feb7f",
+    "source_sha256": "23fd1cb18da87177ccd61bdaa015e144f0bc7290756ba77cfaa92e432ac7aba1",
+    "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/d/dupeguru.rb"
+  },
+  "min": {
+    "artifact_host": "github.com",
+    "official_recipe_sha256": "e55fd1733695f640d505e0ac31d2851b52e00e35fec3d2384e50e0ff5f5e396e",
+    "official_version": "1.35.7",
+    "recipe_sha256": "e55fd1733695f640d505e0ac31d2851b52e00e35fec3d2384e50e0ff5f5e396e",
+    "source_sha256": "38b91f10792e7ba7eb44ea20f4c535037d1f3d47e9c6b4f6f36382bc044d6d4a",
+    "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/m/min.rb"
+  },
+  "rar": {
+    "artifact_host": "www.rarlab.com",
+    "official_recipe_sha256": "34339ba1d80626458fe152fabc869c8adabf88a33a3b0fd579f10ff384e86774",
+    "official_version": "7.23",
+    "recipe_sha256": "34339ba1d80626458fe152fabc869c8adabf88a33a3b0fd579f10ff384e86774",
+    "source_sha256": "2f3ca8906447fa7f368651465119e922f5cba67ac7b9502b0944afbdb4952dc8",
+    "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/r/rar.rb"
+  },
+  "xld": {
+    "artifact_host": "downloads.sourceforge.net",
+    "official_recipe_sha256": "3bb66284ed2ae916e08552b7e5598b75dd1528891d647d74ffe5016278ad94fe",
+    "official_version": "20250302",
+    "recipe_sha256": "3bb66284ed2ae916e08552b7e5598b75dd1528891d647d74ffe5016278ad94fe",
+    "source_sha256": "950b9d0e38daa4b6e5f938ab140fdc8f66783bd5408a99a6d79b3874d913e48b",
+    "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/x/xld.rb"
+  }
+}

@@ -1,0 +1,5 @@
+chromedriver
+dupeguru
+min
+rar
+xld

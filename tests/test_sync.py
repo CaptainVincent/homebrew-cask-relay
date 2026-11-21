@@ -331,6 +331,16 @@ class SyncTests(unittest.TestCase):
                     cask_sync.fetch(url)
             opener.assert_not_called()
 
+    def test_command_failure_reports_both_stream_tails(self):
+        result = subprocess.CompletedProcess(
+            ["brew", "livecheck"], 1, b"JSON status", b"." * 1400 + b"last error"
+        )
+        with (
+            patch("cask_relay.sync.subprocess.run", return_value=result),
+            self.assertRaisesRegex(RuntimeError, "last error.*JSON status"),
+        ):
+            cask_sync.command(["brew", "livecheck"])
+
     def test_source_redirect_is_not_followed(self):
         with self.assertRaisesRegex(ValueError, "Redirected"):
             cask_sync.NoSourceRedirect().redirect_request(

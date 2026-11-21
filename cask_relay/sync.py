@@ -71,9 +71,11 @@ def fetch(url):
 def command(args):
     result = subprocess.run(args, check=False, capture_output=True, timeout=900)
     if result.returncode:
-        detail = (result.stderr or result.stdout).decode("utf-8", "replace").strip()
+        stderr = result.stderr.decode("utf-8", "replace").strip()[-1200:]
+        stdout = result.stdout.decode("utf-8", "replace").strip()[-1200:]
         raise RuntimeError(
-            f"{args[0]} command failed ({result.returncode}): {detail[:500]!r}"
+            f"{args[0]} command failed ({result.returncode}): "
+            f"stderr={stderr!r}; stdout={stdout!r}"
         )
     return result.stdout.decode("utf-8")
 

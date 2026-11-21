@@ -24,6 +24,10 @@ Already installed from another tap? Use `brew reinstall --cask "$tap/dupeguru"`
 instead. To update, run `brew upgrade`. For self-updating casks such as Min
 and XLD, use `brew upgrade --cask --greedy` with the full cask name.
 
+To trust the entire supported list without trusting the tap itself, run
+[`scripts/trust-casks`](scripts/trust-casks) from this checkout to preview the
+commands, then rerun with `--apply`. It does not install or upgrade anything.
+
 See the [cask list](casks.txt) and [maintenance notes](docs/maintenance.md).
 Based on [homebrew-attic](https://github.com/ylluminate/homebrew-attic).
 [BSD-2-Clause](LICENSE.md).

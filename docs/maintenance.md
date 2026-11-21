@@ -34,6 +34,8 @@ workflow runs on the default branch. Start it manually in Actions, or set
 `CASK_RELAY_ENABLED` to `true` to schedule it daily. It opens a pull request for any accepted
 change, including routine bumps. It never pushes to the default branch. An
 open update PR blocks new ones. One failed version check stops the batch.
+If a native bump changes more than the routine policy allows, the job reports
+the cask, versions and a bounded diff, then rolls back without opening a PR.
 
 The maintenance job runs tests before opening its PR. The job needs contents
 and pull-request write access, and repository settings must allow Actions to

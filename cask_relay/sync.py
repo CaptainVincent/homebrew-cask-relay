@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import urllib.request
+from difflib import unified_diff
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -276,7 +277,23 @@ def upstream_updates(root, names, records, tap, bump, dry_run, run):
                 )
             routine, why = routine_recipe_change(before, after)
             if not routine:
-                raise ValueError(f"Native bump requires review: {name}: {why}")
+                diff = "".join(
+                    unified_diff(
+                        before.splitlines(keepends=True),
+                        after.splitlines(keepends=True),
+                        fromfile="committed recipe",
+                        tofile="native candidate",
+                        n=2,
+                    )
+                )
+                # Escape newlines/control characters in public workflow logs.
+                excerpt = repr(diff[:6000])
+                if len(diff) > 6000:
+                    excerpt += " (truncated)"
+                raise ValueError(
+                    f"Native bump requires review: {name} {row['current']} -> {latest}: {why}. "
+                    f"Rejected diff: {excerpt}"
+                )
             validate_recipe(name, after)
             info = parse_json(
                 run(["brew", "info", "--cask", "--json=v2", f"{tap}/{name}"]),

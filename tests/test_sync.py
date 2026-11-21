@@ -555,8 +555,11 @@ class SyncTests(unittest.TestCase):
                 path.write_text(path.read_text() + "# requires review\n")
             return result
 
-        with self.assertRaisesRegex(ValueError, "Native bump requires review"):
+        with self.assertRaisesRegex(ValueError, "Native bump requires review") as error:
             sync(self.root, tap="owner/tools", bump=True, download=self.fetch, run=run)
+        self.assertIn("min 1.0 -> 2.0", str(error.exception))
+        self.assertIn("+# requires review", str(error.exception))
+        self.assertNotIn("\n", str(error.exception))
         self.assertFalse(any(args[:2] == ["brew", "info"] for args in self.calls))
         self.assertEqual(before, self.files())
 

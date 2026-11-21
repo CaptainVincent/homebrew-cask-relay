@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+case "$#:${1:-}" in
+    0:) apply=false ;;
+    1:--apply) apply=true ;;
+    *) printf 'Usage: %s [--apply]\n' "$0" >&2; exit 2 ;;
+esac
+
+cd "$(dirname "$0")/.."
+tap=captainvincent/cask-relay
+names=$(python3 -m cask_relay list)
+if [ "$apply" = true ]; then
+    taps=$(brew tap)
+    if ! printf '%s\n' "$taps" | grep -Fxq "$tap"; then
+        printf 'Add the tap first: brew tap %s\n' "$tap" >&2
+        exit 1
+    fi
+fi
+
+while IFS= read -r cask; do
+    if [ "$apply" = true ]; then
+        brew trust --cask "$tap/$cask" </dev/null
+    else
+        printf 'brew trust --cask %s/%s\n' "$tap" "$cask"
+    fi
+done <<EOF
+$names
+EOF

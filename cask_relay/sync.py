@@ -276,6 +276,14 @@ def upstream_updates(root, names, records, tap, bump, dry_run, run):
                     f"Native bump did not produce the requested version: {name}"
                 )
             routine, why = routine_recipe_change(before, after)
+            if not routine and name == "chromedriver":
+                # shortcut: restore the one observed formatter-only deletion; review other diffs.
+                stanza = '\n  conflicts_with cask: "chromedriver@beta"\n'
+                restored = after.replace(stanza, "\n" + stanza, 1)
+                if routine_recipe_change(before, restored)[0]:
+                    path.write_bytes(restored.encode("utf-8"))
+                    after = restored
+                    routine = True
             if not routine:
                 diff = "".join(
                     unified_diff(

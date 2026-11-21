@@ -563,6 +563,67 @@ class SyncTests(unittest.TestCase):
         self.assertFalse(any(args[:2] == ["brew", "info"] for args in self.calls))
         self.assertEqual(before, self.files())
 
+    def test_chromedriver_formatter_blank_is_restored_but_code_is_not(self):
+        token = "chromedriver"
+        (self.root / "casks.txt").write_text(token + "\n")
+        self.source = self.source.replace('cask "min"', 'cask "chromedriver"').replace(
+            "\nend\n", '\n\n\n  conflicts_with cask: "chromedriver@beta"\nend\n'
+        )
+        self.meta.update(token=token, ruby_source_path="Casks/c/chromedriver.rb")
+        self.do_sync()
+        file = self.root / "Casks/c/chromedriver.rb"
+        before = file.read_text()
+        expected = before.replace('version "1.0"', 'version "2.0"')
+        formatted = expected.replace("\n\n\n  conflicts_with", "\n\n  conflicts_with")
+        candidate = formatted.replace("conflicts_with", "depends_on")
+        checked = []
+
+        def run(args):
+            match args[:2]:
+                case ["brew", "--repository"]:
+                    return str(self.root)
+                case ["brew", "livecheck"]:
+                    return json.dumps(
+                        [
+                            {
+                                "cask": token,
+                                "version": {
+                                    "current": "1.0",
+                                    "latest": "2.0",
+                                    "outdated": True,
+                                },
+                            }
+                        ]
+                    )
+                case ["brew", "bump-cask-pr"]:
+                    file.write_text(candidate)
+                case ["brew", "info"]:
+                    checked.append(file.read_text())
+                    return json.dumps(
+                        {
+                            "casks": [
+                                {
+                                    "token": token,
+                                    "version": "2.0",
+                                    "disabled": False,
+                                    "sha256": "e" * 64,
+                                    "url": self.meta["url"],
+                                }
+                            ]
+                        }
+                    )
+            return "Syntax OK"
+
+        with self.assertRaisesRegex(ValueError, "Native bump requires review"):
+            sync(self.root, tap="owner/tools", bump=True, download=self.fetch, run=run)
+        self.assertEqual(checked, [])
+        self.assertEqual(file.read_text(), before)
+
+        candidate = formatted
+        sync(self.root, tap="owner/tools", bump=True, download=self.fetch, run=run)
+        self.assertEqual(checked, [expected])
+        self.assertEqual(file.read_text(), expected)
+
     def test_trailing_zero_is_not_an_upgrade(self):
         self.do_sync()
         self.latest = "1.0.0"

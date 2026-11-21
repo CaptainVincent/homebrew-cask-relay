@@ -19,6 +19,9 @@ jobs:
       (github.event_name == 'workflow_dispatch' || vars.CASK_RELAY_ENABLED == 'true')
     runs-on: macos-latest
     timeout-minutes: 45
+    outputs:
+      branch: ${{ steps.publish.outputs.branch }}
+      sha: ${{ steps.publish.outputs.sha }}
     permissions:
       contents: write
       pull-requests: write
@@ -59,6 +62,7 @@ jobs:
           fi
 
       - name: Open a pull request for review
+        id: publish
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,3 +89,20 @@ jobs:
           gh pr create --base "$DEFAULT_BRANCH" --head "$branch" \
             --title "Update selected casks" \
             --body "Review the recipe and source-lock changes before merging. No applications were installed and no OS security settings were changed."
+          printf 'branch=%s\nsha=%s\n' "$branch" "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  dispatch-checks:
+    needs: update
+    if: needs.update.outputs.branch != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start Checks on the published commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.update.outputs.branch }}
+          SHA: ${{ needs.update.outputs.sha }}
+        run: |
+          gh workflow run checks.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH" --raw-field "expected_sha=$SHA"

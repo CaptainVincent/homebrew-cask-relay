@@ -39,8 +39,12 @@ the cask, versions and a bounded diff, then rolls back without opening a PR.
 
 The maintenance job runs tests before opening its PR. The job needs contents
 and pull-request write access, and repository settings must allow Actions to
-open a PR. Preparation and publication share a runner; the diff check is not a
-sandbox. Review the recipe and lock changes before merging.
+open a PR. A separate job then starts the read-only Checks workflow on the
+published commit using `workflow_dispatch`. Only that job needs `actions: write`;
+no additional token is required. Use the dispatched Checks result on the PR's
+head commit: GitHub may still show an approval prompt for the separate
+`pull_request` run. Preparation and publication share a runner; the diff check
+is not a sandbox. Review the recipe and lock changes before merging.
 
 Leave `CASK_RELAY_ENABLED` unset until a manual maintenance run succeeds. Verify an install, a tap
 migration, an upgrade, and a maintenance run in a test repository before

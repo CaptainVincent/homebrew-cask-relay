@@ -3,7 +3,7 @@
     "artifact_host": "storage.googleapis.com",
     "official_recipe_sha256": "8fc58eef892bab49c3edd8c509ce9e3c3b93e7c858f5fff9858becc65a9999fb",
     "official_version": "152.0.7977.64",
-    "recipe_sha256": "8fc58eef892bab49c3edd8c509ce9e3c3b93e7c858f5fff9858becc65a9999fb",
+    "recipe_sha256": "dade4e7c74f3d1dd5acc5e08e5f84e77b355c24279959222a6de0c04fa293c5f",
     "source_sha256": "cadee06c0c8ed95ace87137338366131a6988aff637e15da077b62bd127f8aee",
     "source_url": "https://raw.githubusercontent.com/Homebrew/homebrew-cask/1fc7fa58a896af13c7e14d0b87114aa6a4ec422f/Casks/c/chromedriver.rb"
   },
